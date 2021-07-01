@@ -1,0 +1,34 @@
+--------tp folder--------
+docker build -t healthcare .
+node index.js tcp://localhost:4004
+
+
+------root directory-------
+docker-compose -f healthcare-devmode.yaml up
+
+
+---------client folder-------
+
+---------addDoctor---------
+node sendRequest.js "{"action":"addDoctor","doctorId":"1","name":"naveena","specialisation":"heartSurgeon","age":98,"contact":9889}"
+
+----------addPatient----------
+node sendRequest.js "{"action":"addPatient","patientId":"1","name":"harshini","age":67,"contact":93884}"
+
+-----------sendDetails-------
+node sendRequest.js "{"action":"sendDetails","patientId":"1","doctorId":"1"}"
+
+---------addPrescription---------
+node sendRequest.js "{"action":"addPrescription","patientId":"1","doctorId":"1","prescriptionId":"1","drugName":"paracetamol","timestamp":"237734"}"
+
+---------addRecord---------
+node sendRequest.js "{"action":"addRecord","patientId":"1","doctorId":"1","RecordId":"1","disease":"corona","timestamp":"297734"}"
+
+---------transaction-------
+node sendRequest.js "{"action":"transaction","patientId":"1","doctorId":"1","val":5}"
+
+-----------viewDetails--------
+node sendRequest.js "{"action":"viewDetails","patientId":"1"}"
+
+-----------explorer folder------------
+node index.js
