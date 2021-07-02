@@ -12,12 +12,44 @@ const instance = axios.create({
 instance
     .get('/state',{
         params:{
-            address:'5f51f4',
+            address:'5f51f400',
         },
     })
     .then(response=>{
         let data = lget(response,'data.data');
-        console.log('\n details:\n');
+        console.log('\n ----------patient---------\n');
+        for(info of data){
+            const inforamtion=info.data;
+            const buf=Buffer.from(inforamtion,'base64');
+            console.log(buf.toString());
+        }
+    });
+
+    instance
+    .get('/state',{
+        params:{
+            address:'5f51f401',
+        },
+    })
+    .then(response=>{
+        let data = lget(response,'data.data');
+        console.log('\n\n ----------doctor---------\n');
+        for(info of data){
+            const inforamtion=info.data;
+            const buf=Buffer.from(inforamtion,'base64');
+            console.log(buf.toString());
+        }
+    });
+
+    instance
+    .get('/state',{
+        params:{
+            address:'5f51f411',
+        },
+    })
+    .then(response=>{
+        let data = lget(response,'data.data');
+        console.log('\n\n ----------pharmacy---------\n');
         for(info of data){
             const inforamtion=info.data;
             const buf=Buffer.from(inforamtion,'base64');
