@@ -30,6 +30,16 @@ class healthcareHandler extends TransactionHandler {
         }
     }
 
+    async handleAddPharmacy(context, payload) {
+        const clientStore = new ClientStore(context);
+        const pharmacyExists = await clientStore.pharmacyExists(payload.pharmacyId);
+        if (pharmacyExists) {
+            throw new InvalidTransaction(`pharmacy with pharmacyId : ${payload.pharmacyId} already exists!`);
+        } else {
+            return await clientStore.addPharmacy(payload);
+        }
+    }
+
     async handleAddPrescription(context, payload){
         const clientStore= new ClientStore(context);
         const doctorExists= await clientStore.doctorExists(payload.doctorId);
@@ -85,6 +95,17 @@ class healthcareHandler extends TransactionHandler {
         }
     }
 
+    async handleSendPrescription(context, payload){
+        const clientStore = new ClientStore(context);
+        const pharmacyExists= await clientStore.pharmacyExists(payload.pharmacyId);
+        const patientExists= await clientStore.patientExists(payload.patientId);
+        if(!(pharmacyExists && patientExists)){
+            throw new InvalidTransaction(`patientId or pharmacyId doesn't exist`);
+        }else{
+            return await clientStore.sendPrescription(payload);
+        }
+    }
+
     async apply(transactionProcessRequest, context) {
         let payload = cbor.decode(transactionProcessRequest.payload);
         switch (payload.action) {
@@ -92,6 +113,8 @@ class healthcareHandler extends TransactionHandler {
                 return await this.handleAddDoctor(context, payload);
             case 'addPatient':
                 return await this.handleAddPatient(context, payload);
+            case 'addPharmacy':
+                return await this.handleAddPharmacy(context, payload);
             case 'addPrescription':
                 return await this.handleAddPrescription(context, payload);
             case 'addRecord':
@@ -102,6 +125,8 @@ class healthcareHandler extends TransactionHandler {
                 return await this.handleTransaction(context, payload);
             case 'sendDetails':
                 return await this.handleSendDetails(context,payload);
+            case 'sendPrescription':
+                return await this.handleSendPrescription(context, payload);
             default:
                 throw new InvalidTransaction(
                     `Action must be addDoctor, addPatient, addPrescription, addRecord, transaction, viewDetails and not ${payload.action}`

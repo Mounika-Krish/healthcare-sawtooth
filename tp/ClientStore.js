@@ -62,6 +62,31 @@ class ClientStore {
         }
     }
 
+    async addPharmacy(pharmacy) {
+        const address = pharmacyAddress(pharmacy.pharmacyId);
+        let pharmacyInfo = {
+            pharmacyId: pharmacy.pharmacyId,
+            name: pharmacy.name,
+            contact: pharmacy.contact,
+            accBalance: 10,
+            prescriptions:[]
+        };
+        let serialised = serialise(pharmacyInfo);
+        let data = Buffer.from(serialised);
+        return await this.context.setState({ [address]: data }, this.timeout);
+    }
+
+    async pharmacyExists(pharmacyId) {
+        const address = pharmacyAddress(pharmacyId);
+        let pharmacyInfo = await this.context.getState([address], this.timeout);
+        const pharmacy = pharmacyInfo[address][0];
+        if (pharmacy == undefined || pharmacy == null) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     async getPatient(patientId) {
         const address = patientAddress(patientId);
         let patientInfo = await this.context.getState([address], this.timeout);
@@ -142,6 +167,29 @@ class ClientStore {
         }
     }
 
+    async sendPrescription(detail){
+        const address = patientAddress(detail.patientId);
+        const phar = pharmacyAddress(detail.pharmacyId);
+        let patientInfo = await this.context.getState([address], this.timeout);
+        let pharInfo = await this.context.getState([phar],this.timeout);
+        const patientData = patientInfo[address];
+        const pharData = pharInfo[phar];
+        if (Buffer.isBuffer(patientData)&& Buffer.isBuffer(pharData)) {
+            const json = patientData.toString();
+            const patient = JSON.parse(json);
+
+            const djson = pharData.toString();
+            const pharmacy = JSON.parse(djson);
+
+            pharmacy.prescriptions.push(patient.prescriptions[detail.index]);
+            let serialised = serialise(pharmacy);
+            let data = Buffer.from(serialised);
+            return await this.context.setState({ [phar]: data }, this.timeout);
+        } else {
+            return undefined;
+        }
+    }
+
     async transaction(detail){
         const address = patientAddress(detail.patientId);
         const doc = doctorAddress(detail.doctorId);
@@ -175,5 +223,7 @@ class ClientStore {
 
 const patientAddress = patientId => TP_NAMESPACE + '00' + _hash(patientId).substring(0, 62);
 const doctorAddress = doctorId => TP_NAMESPACE + '01' + _hash(doctorId).substring(0, 62);
+const pharmacyAddress = pharmacyId => TP_NAMESPACE + '11' + _hash(pharmacyId).substring(0, 62);
+
 
 module.exports = ClientStore;
